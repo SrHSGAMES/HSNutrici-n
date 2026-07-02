@@ -1,0 +1,10 @@
+{
+  "name": "hsnutricion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HSNutrición — guía nutricional con detección de alimentos por texto/imagen y fichas respaldadas por PubMed.",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
+}
