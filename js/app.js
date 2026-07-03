@@ -151,246 +151,69 @@
     });
   }
 
-  /* ================= Analizador: texto ================= */
-  const resultsSection = document.getElementById("results");
-  const resultsGrid = document.getElementById("resultsGrid");
-  const resultsCount = document.getElementById("resultsCount");
-  const emptyState = document.getElementById("emptyState");
-  const analyzerStatus = document.getElementById("analyzerStatus");
-
-  function mostrarResultados(alimentos, origen) {
-    resultsGrid.innerHTML = "";
-    if (!alimentos.length) {
-      analyzerStatus.textContent = "No hemos reconocido ningún alimento de nuestra guía local en " + origen + ". Prueba a ser más específico, o búscalo con IA + PubMed más abajo 👇";
-      resultsSection.hidden = true;
-      emptyState.hidden = false;
-      return;
+  // Ejecuta cada bloque de forma aislada: si uno falla (p.ej. por un elemento que
+  // no existe tras una caché desincronizada entre HTML y JS), el resto de la
+  // página sigue funcionando en vez de quedar completamente en blanco.
+  function seguro(nombre, fn) {
+    try {
+      fn();
+    } catch (err) {
+      console.error(`[HSNutrición] Fallo en "${nombre}":`, err);
     }
-    analyzerStatus.textContent = "";
-    emptyState.hidden = true;
-    resultsSection.hidden = false;
-    resultsCount.textContent = `${alimentos.length} alimento${alimentos.length > 1 ? "s" : ""} detectado${alimentos.length > 1 ? "s" : ""}`;
-    alimentos.forEach((food, i) => {
-      const card = crearTarjetaAlimento(food);
-      card.style.animationDelay = (i * 0.06) + "s";
-      resultsGrid.appendChild(card);
-    });
-    animarBarras(resultsGrid);
-    resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  document.getElementById("btnAnalizarTexto").addEventListener("click", () => {
-    const texto = document.getElementById("inputTexto").value.trim();
-    if (!texto) {
-      analyzerStatus.textContent = "Escribe primero qué has comido.";
-      return;
-    }
-    const alimentos = detectarAlimentos(texto);
-    mostrarResultados(alimentos, "el texto");
-  });
-
-  /* ================= Analizador: imagen ================= */
-  const dropzone = document.getElementById("dropzone");
-  const inputImagen = document.getElementById("inputImagen");
-  const dropzoneEmpty = document.getElementById("dropzoneEmpty");
-  const previewImagen = document.getElementById("previewImagen");
-  const btnAnalizarImagen = document.getElementById("btnAnalizarImagen");
-  let imagenBase64 = null;
-  let imagenMime = null;
-
-  dropzone.addEventListener("click", () => inputImagen.click());
-  ["dragover", "dragenter"].forEach(evt =>
-    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add("drag-over"); })
-  );
-  ["dragleave", "drop"].forEach(evt =>
-    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove("drag-over"); })
-  );
-  dropzone.addEventListener("drop", e => {
-    const file = e.dataTransfer.files[0];
-    if (file) cargarImagen(file);
-  });
-  inputImagen.addEventListener("change", () => {
-    if (inputImagen.files[0]) cargarImagen(inputImagen.files[0]);
-  });
-
-  // Redimensiona la imagen en el propio navegador (máx. 1024px) antes de enviarla,
-  // para que el payload sea pequeño y rápido de subir.
-  function redimensionarImagen(dataUrl, maxDim = 1024, calidad = 0.85) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > maxDim || height > maxDim) {
-          const ratio = Math.min(maxDim / width, maxDim / height);
-          width = Math.round(width * ratio);
-          height = Math.round(height * ratio);
+  /* ================= Reveal on scroll (va primero: es lo que hace visible el contenido) ================= */
+  seguro("reveal-on-scroll", () => {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+          io.unobserve(entry.target);
         }
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", calidad));
-      };
-      img.onerror = reject;
-      img.src = dataUrl;
-    });
-  }
-
-  function cargarImagen(file) {
-    if (!file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const dataUrl = await redimensionarImagen(reader.result);
-      imagenMime = "image/jpeg";
-      imagenBase64 = dataUrl.split(",")[1];
-      previewImagen.src = dataUrl;
-      previewImagen.hidden = false;
-      dropzoneEmpty.hidden = true;
-      btnAnalizarImagen.disabled = false;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  btnAnalizarImagen.addEventListener("click", async () => {
-    if (!imagenBase64) return;
-
-    btnAnalizarImagen.disabled = true;
-    btnAnalizarImagen.textContent = "Analizando imagen…";
-    analyzerStatus.textContent = "Consultando al modelo de visión…";
-
-    try {
-      const nombres = await detectarAlimentosEnImagen(imagenBase64, imagenMime);
-      const alimentos = detectarAlimentos(nombres);
-      mostrarResultados(alimentos, "la imagen");
-    } catch (err) {
-      console.error(err);
-      analyzerStatus.textContent = "No se pudo analizar la imagen (" + err.message + "). Puedes describir la comida en la pestaña de texto.";
-    } finally {
-      btnAnalizarImagen.disabled = false;
-      btnAnalizarImagen.innerHTML = 'Analizar imagen <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M13 5l7 7-7 7-1.41-1.41L16.17 13H4v-2h12.17l-4.58-4.59L13 5z"/></svg>';
-    }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll(".reveal").forEach(el => io.observe(el));
   });
 
-  async function detectarAlimentosEnImagen(base64, mime) {
-    const resp = await fetch("/api/analyze-image", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ imageBase64: base64, mimeType: mime })
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || ("respuesta " + resp.status));
-    return data.texto || "";
-  }
+  /* ================= Guía completa (contenido visible por defecto) ================= */
+  seguro("guia-completa", () => {
+    const guiaGrid = document.getElementById("guiaGrid");
+    const buscadorGuia = document.getElementById("buscadorGuia");
+    const filtroCategoria = document.getElementById("filtroCategoria");
+    const filtroRating = document.getElementById("filtroRating");
 
-  /* ================= Pestañas del analizador ================= */
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach(t => { t.classList.remove("active"); t.setAttribute("aria-selected", "false"); });
-      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-      tab.classList.add("active");
-      tab.setAttribute("aria-selected", "true");
-      document.querySelector(`.tab-panel[data-panel="${tab.dataset.tab}"]`).classList.add("active");
-      analyzerStatus.textContent = "";
-    });
+    const categorias = [...new Set(FOODS.map(f => f.categoria))].sort();
+    filtroCategoria.innerHTML = '<option value="">Todas las categorías</option>' +
+      categorias.map(c => `<option value="${c}">${c}</option>`).join("");
+
+    function renderGuia() {
+      const q = normalizar(buscadorGuia.value);
+      const cat = filtroCategoria.value;
+      const rating = filtroRating.value;
+      const lista = FOODS.filter(f =>
+        (!q || normalizar(f.nombre).includes(q)) &&
+        (!cat || f.categoria === cat) &&
+        (!rating || f.rating === rating)
+      );
+      guiaGrid.innerHTML = "";
+      if (!lista.length) {
+        guiaGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--ink-faint)">No se han encontrado alimentos con ese filtro.</p>';
+        return;
+      }
+      lista.forEach((food, i) => {
+        const card = crearTarjetaAlimento(food);
+        card.style.animationDelay = Math.min(i * 0.04, 0.4) + "s";
+        guiaGrid.appendChild(card);
+      });
+      animarBarras(guiaGrid);
+    }
+    [buscadorGuia, filtroCategoria, filtroRating].forEach(el => el.addEventListener("input", renderGuia));
+    renderGuia();
   });
-
-  /* ================= Modal informativo sobre la IA ================= */
-  const modalOverlay = document.getElementById("modalOverlay");
-
-  function abrirModal() { modalOverlay.hidden = false; }
-  function cerrarModal() { modalOverlay.hidden = true; }
-
-  document.getElementById("btnSettings").addEventListener("click", abrirModal);
-  document.getElementById("modalClose").addEventListener("click", cerrarModal);
-  document.getElementById("modalOk").addEventListener("click", cerrarModal);
-  modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) cerrarModal(); });
-
-  /* ================= Búsqueda de alimentos con IA + PubMed ================= */
-  const inputAiLookup = document.getElementById("inputAiLookup");
-  const btnAiLookup = document.getElementById("btnAiLookup");
-  const aiLookupStatus = document.getElementById("aiLookupStatus");
-  const aiLookupResult = document.getElementById("aiLookupResult");
-
-  async function buscarConIA(alimento) {
-    const clave = "hsn_ai_" + normalizar(alimento);
-    const cache = sessionStorage.getItem(clave);
-    if (cache) return JSON.parse(cache);
-
-    const resp = await fetch("/api/food-lookup", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ alimento })
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || ("respuesta " + resp.status));
-    sessionStorage.setItem(clave, JSON.stringify(data));
-    return data;
-  }
-
-  async function ejecutarBusquedaIA() {
-    const alimento = inputAiLookup.value.trim();
-    if (!alimento) {
-      aiLookupStatus.textContent = "Escribe primero el nombre de un alimento.";
-      return;
-    }
-    btnAiLookup.disabled = true;
-    aiLookupStatus.textContent = "Consultando PubMed y generando la ficha… puede tardar unos segundos.";
-    aiLookupResult.innerHTML = "";
-    try {
-      const { food, estudios } = await buscarConIA(alimento);
-      aiLookupStatus.textContent = "";
-      const card = crearTarjetaAlimento(food, { estudios });
-      aiLookupResult.appendChild(card);
-      animarBarras(aiLookupResult);
-      card.scrollIntoView({ behavior: "smooth", block: "center" });
-    } catch (err) {
-      console.error(err);
-      aiLookupStatus.textContent = "No se pudo completar la búsqueda (" + err.message + "). Prueba de nuevo en unos segundos.";
-    } finally {
-      btnAiLookup.disabled = false;
-    }
-  }
-
-  btnAiLookup.addEventListener("click", ejecutarBusquedaIA);
-  inputAiLookup.addEventListener("keydown", e => { if (e.key === "Enter") ejecutarBusquedaIA(); });
-
-  /* ================= Guía completa ================= */
-  const guiaGrid = document.getElementById("guiaGrid");
-  const buscadorGuia = document.getElementById("buscadorGuia");
-  const filtroCategoria = document.getElementById("filtroCategoria");
-  const filtroRating = document.getElementById("filtroRating");
-
-  const categorias = [...new Set(FOODS.map(f => f.categoria))].sort();
-  filtroCategoria.innerHTML = '<option value="">Todas las categorías</option>' +
-    categorias.map(c => `<option value="${c}">${c}</option>`).join("");
-
-  function renderGuia() {
-    const q = normalizar(buscadorGuia.value);
-    const cat = filtroCategoria.value;
-    const rating = filtroRating.value;
-    const lista = FOODS.filter(f =>
-      (!q || normalizar(f.nombre).includes(q)) &&
-      (!cat || f.categoria === cat) &&
-      (!rating || f.rating === rating)
-    );
-    guiaGrid.innerHTML = "";
-    if (!lista.length) {
-      guiaGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--ink-faint)">No se han encontrado alimentos con ese filtro.</p>';
-      return;
-    }
-    lista.forEach((food, i) => {
-      const card = crearTarjetaAlimento(food);
-      card.style.animationDelay = Math.min(i * 0.04, 0.4) + "s";
-      guiaGrid.appendChild(card);
-    });
-    animarBarras(guiaGrid);
-  }
-  [buscadorGuia, filtroCategoria, filtroRating].forEach(el => el.addEventListener("input", renderGuia));
-  renderGuia();
 
   /* ================= Contador hero ================= */
-  const statFoods = document.getElementById("statFoods");
-  (function contar() {
+  seguro("contador-hero", () => {
+    const statFoods = document.getElementById("statFoods");
     const total = FOODS.length;
     let n = 0;
     const step = Math.max(1, Math.round(total / 30));
@@ -399,22 +222,226 @@
       if (n >= total) { n = total; clearInterval(iv); }
       statFoods.textContent = n;
     }, 30);
-  })();
-
-  /* ================= Reveal on scroll ================= */
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("in-view");
-        io.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
-  document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+  });
 
   /* ================= Menú móvil ================= */
-  document.getElementById("navToggle").addEventListener("click", () => {
-    document.getElementById("mainNav").classList.toggle("open-mobile");
+  seguro("menu-movil", () => {
+    document.getElementById("navToggle").addEventListener("click", () => {
+      document.getElementById("mainNav").classList.toggle("open-mobile");
+    });
+  });
+
+  /* ================= Pestañas del analizador ================= */
+  let analyzerStatus;
+  seguro("pestanas-analizador", () => {
+    analyzerStatus = document.getElementById("analyzerStatus");
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => { t.classList.remove("active"); t.setAttribute("aria-selected", "false"); });
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        tab.classList.add("active");
+        tab.setAttribute("aria-selected", "true");
+        document.querySelector(`.tab-panel[data-panel="${tab.dataset.tab}"]`).classList.add("active");
+        if (analyzerStatus) analyzerStatus.textContent = "";
+      });
+    });
+  });
+
+  /* ================= Analizador: texto ================= */
+  seguro("analizador-texto", () => {
+    const resultsSection = document.getElementById("results");
+    const resultsGrid = document.getElementById("resultsGrid");
+    const resultsCount = document.getElementById("resultsCount");
+    const emptyState = document.getElementById("emptyState");
+
+    window.__mostrarResultados = function mostrarResultados(alimentos, origen) {
+      resultsGrid.innerHTML = "";
+      if (!alimentos.length) {
+        if (analyzerStatus) analyzerStatus.textContent = "No hemos reconocido ningún alimento de nuestra guía local en " + origen + ". Prueba a ser más específico, o búscalo con IA + PubMed más abajo 👇";
+        resultsSection.hidden = true;
+        emptyState.hidden = false;
+        return;
+      }
+      if (analyzerStatus) analyzerStatus.textContent = "";
+      emptyState.hidden = true;
+      resultsSection.hidden = false;
+      resultsCount.textContent = `${alimentos.length} alimento${alimentos.length > 1 ? "s" : ""} detectado${alimentos.length > 1 ? "s" : ""}`;
+      alimentos.forEach((food, i) => {
+        const card = crearTarjetaAlimento(food);
+        card.style.animationDelay = (i * 0.06) + "s";
+        resultsGrid.appendChild(card);
+      });
+      animarBarras(resultsGrid);
+      resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    document.getElementById("btnAnalizarTexto").addEventListener("click", () => {
+      const texto = document.getElementById("inputTexto").value.trim();
+      if (!texto) {
+        if (analyzerStatus) analyzerStatus.textContent = "Escribe primero qué has comido.";
+        return;
+      }
+      const alimentos = detectarAlimentos(texto);
+      window.__mostrarResultados(alimentos, "el texto");
+    });
+  });
+
+  /* ================= Analizador: imagen ================= */
+  seguro("analizador-imagen", () => {
+    const dropzone = document.getElementById("dropzone");
+    const inputImagen = document.getElementById("inputImagen");
+    const dropzoneEmpty = document.getElementById("dropzoneEmpty");
+    const previewImagen = document.getElementById("previewImagen");
+    const btnAnalizarImagen = document.getElementById("btnAnalizarImagen");
+    let imagenBase64 = null;
+    let imagenMime = null;
+
+    dropzone.addEventListener("click", () => inputImagen.click());
+    ["dragover", "dragenter"].forEach(evt =>
+      dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add("drag-over"); })
+    );
+    ["dragleave", "drop"].forEach(evt =>
+      dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove("drag-over"); })
+    );
+    dropzone.addEventListener("drop", e => {
+      const file = e.dataTransfer.files[0];
+      if (file) cargarImagen(file);
+    });
+    inputImagen.addEventListener("change", () => {
+      if (inputImagen.files[0]) cargarImagen(inputImagen.files[0]);
+    });
+
+    // Redimensiona la imagen en el propio navegador (máx. 1024px) antes de enviarla,
+    // para que el payload sea pequeño y rápido de subir.
+    function redimensionarImagen(dataUrl, maxDim = 1024, calidad = 0.85) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            const ratio = Math.min(maxDim / width, maxDim / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", calidad));
+        };
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+    }
+
+    function cargarImagen(file) {
+      if (!file.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const dataUrl = await redimensionarImagen(reader.result);
+        imagenMime = "image/jpeg";
+        imagenBase64 = dataUrl.split(",")[1];
+        previewImagen.src = dataUrl;
+        previewImagen.hidden = false;
+        dropzoneEmpty.hidden = true;
+        btnAnalizarImagen.disabled = false;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function detectarAlimentosEnImagen(base64, mime) {
+      const resp = await fetch("/api/analyze-image", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64, mimeType: mime })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || ("respuesta " + resp.status));
+      return data.texto || "";
+    }
+
+    btnAnalizarImagen.addEventListener("click", async () => {
+      if (!imagenBase64) return;
+
+      btnAnalizarImagen.disabled = true;
+      btnAnalizarImagen.textContent = "Analizando imagen…";
+      if (analyzerStatus) analyzerStatus.textContent = "Consultando al modelo de visión…";
+
+      try {
+        const nombres = await detectarAlimentosEnImagen(imagenBase64, imagenMime);
+        const alimentos = detectarAlimentos(nombres);
+        window.__mostrarResultados(alimentos, "la imagen");
+      } catch (err) {
+        console.error(err);
+        if (analyzerStatus) analyzerStatus.textContent = "No se pudo analizar la imagen (" + err.message + "). Puedes describir la comida en la pestaña de texto.";
+      } finally {
+        btnAnalizarImagen.disabled = false;
+        btnAnalizarImagen.innerHTML = 'Analizar imagen <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M13 5l7 7-7 7-1.41-1.41L16.17 13H4v-2h12.17l-4.58-4.59L13 5z"/></svg>';
+      }
+    });
+  });
+
+  /* ================= Modal informativo sobre la IA ================= */
+  seguro("modal-info-ia", () => {
+    const modalOverlay = document.getElementById("modalOverlay");
+    function abrirModal() { modalOverlay.hidden = false; }
+    function cerrarModal() { modalOverlay.hidden = true; }
+
+    document.getElementById("btnSettings").addEventListener("click", abrirModal);
+    document.getElementById("modalClose").addEventListener("click", cerrarModal);
+    document.getElementById("modalOk").addEventListener("click", cerrarModal);
+    modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) cerrarModal(); });
+  });
+
+  /* ================= Búsqueda de alimentos con IA + PubMed ================= */
+  seguro("busqueda-ia-pubmed", () => {
+    const inputAiLookup = document.getElementById("inputAiLookup");
+    const btnAiLookup = document.getElementById("btnAiLookup");
+    const aiLookupStatus = document.getElementById("aiLookupStatus");
+    const aiLookupResult = document.getElementById("aiLookupResult");
+
+    async function buscarConIA(alimento) {
+      const clave = "hsn_ai_" + normalizar(alimento);
+      const cache = sessionStorage.getItem(clave);
+      if (cache) return JSON.parse(cache);
+
+      const resp = await fetch("/api/food-lookup", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ alimento })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || ("respuesta " + resp.status));
+      sessionStorage.setItem(clave, JSON.stringify(data));
+      return data;
+    }
+
+    async function ejecutarBusquedaIA() {
+      const alimento = inputAiLookup.value.trim();
+      if (!alimento) {
+        aiLookupStatus.textContent = "Escribe primero el nombre de un alimento.";
+        return;
+      }
+      btnAiLookup.disabled = true;
+      aiLookupStatus.textContent = "Consultando PubMed y generando la ficha… puede tardar unos segundos.";
+      aiLookupResult.innerHTML = "";
+      try {
+        const { food, estudios } = await buscarConIA(alimento);
+        aiLookupStatus.textContent = "";
+        const card = crearTarjetaAlimento(food, { estudios });
+        aiLookupResult.appendChild(card);
+        animarBarras(aiLookupResult);
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+      } catch (err) {
+        console.error(err);
+        aiLookupStatus.textContent = "No se pudo completar la búsqueda (" + err.message + "). Prueba de nuevo en unos segundos.";
+      } finally {
+        btnAiLookup.disabled = false;
+      }
+    }
+
+    btnAiLookup.addEventListener("click", ejecutarBusquedaIA);
+    inputAiLookup.addEventListener("keydown", e => { if (e.key === "Enter") ejecutarBusquedaIA(); });
   });
 
 })();
