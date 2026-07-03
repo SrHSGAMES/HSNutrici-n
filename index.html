@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HSNutrición — Tu guía inteligente de alimentación saludable</title>
+<meta name="description" content="Describe lo que comes o sube una foto y HSNutrición detecta los alimentos, los califica y te recomienda sustitutos más saludables con toda la información nutricional.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="bg-decor" aria-hidden="true">
+  <span class="blob blob-1"></span>
+  <span class="blob blob-2"></span>
+  <span class="blob blob-3"></span>
+</div>
+
+<header class="site-header" id="top">
+  <div class="container header-inner">
+    <a href="#top" class="brand">
+      <span class="brand-mark">🥗</span>
+      <span class="brand-name">HS<span>Nutrición</span></span>
+    </a>
+    <nav class="main-nav" id="mainNav">
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#analizar">Analizar alimentos</a>
+      <a href="#alimentos">Guía de alimentos</a>
+      <a href="#sobre">Sobre HSNutrición</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn-icon" id="btnSettings" title="Cómo funciona la IA" aria-label="Cómo funciona la IA">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19.14 12.94a7.14 7.14 0 0 0 .06-.94 7.14 7.14 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.3 7.3 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.65 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.62-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.42.32.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .45-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.24.1.46 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/></svg>
+      </button>
+      <a href="#analizar" class="btn btn-primary btn-sm">Analizar ahora</a>
+    </div>
+    <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <p class="eyebrow reveal">Guía nutricional con criterio experto</p>
+      <h1 class="reveal">Come mejor sin renunciar <span class="text-underline">a lo que te gusta</span></h1>
+      <p class="hero-sub reveal">Cuéntanos qué comes —por texto o con una foto del plato o la etiqueta— y HSNutrición identifica cada alimento, lo valora con un criterio nutricional claro y te propone el sustituto más saludable, explicado paso a paso.</p>
+      <div class="hero-cta reveal">
+        <a href="#analizar" class="btn btn-primary btn-lg">
+          Analizar mi comida
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M13 5l7 7-7 7-1.41-1.41L16.17 13H4v-2h12.17l-4.58-4.59L13 5z"/></svg>
+        </a>
+        <a href="#como-funciona" class="btn btn-ghost btn-lg">Cómo funciona</a>
+      </div>
+      <ul class="hero-stats reveal">
+        <li><strong id="statFoods">0</strong><span>alimentos en la guía</span></li>
+        <li><strong>A–E</strong><span>calificación nutricional</span></li>
+        <li><strong>100%</strong><span>gratis y sin registro</span></li>
+      </ul>
+    </div>
+    <div class="hero-visual reveal" aria-hidden="true">
+      <div class="mock-card mock-card-1">
+        <span class="mock-emoji">🧈</span>
+        <div class="mock-info">
+          <strong>Mantequilla</strong>
+          <span class="badge badge-D">D</span>
+        </div>
+        <div class="mock-bar"><span style="width: 90%"></span></div>
+      </div>
+      <div class="mock-card mock-card-2">
+        <span class="mock-emoji">🫒</span>
+        <div class="mock-info">
+          <strong>AOVE</strong>
+          <span class="badge badge-A">A</span>
+        </div>
+        <div class="mock-bar"><span style="width: 20%"></span></div>
+      </div>
+      <div class="mock-arrow">→</div>
+    </div>
+  </section>
+
+  <!-- COMO FUNCIONA -->
+  <section class="section" id="como-funciona">
+    <div class="container">
+      <h2 class="section-title reveal">Tan sencillo como escribir o hacer una foto</h2>
+      <p class="section-sub reveal">Sin apps que instalar ni cuentas que crear. Todo ocurre aquí mismo.</p>
+      <div class="steps">
+        <div class="step-card reveal">
+          <div class="step-num">1</div>
+          <div class="step-icon">✍️</div>
+          <h3>Describe o fotografía</h3>
+          <p>Escribe lo que has comido o vas a comer, o sube una foto del plato, la nevera o la etiqueta del envase.</p>
+        </div>
+        <div class="step-card reveal">
+          <div class="step-num">2</div>
+          <div class="step-icon">🔎</div>
+          <h3>Detectamos los alimentos</h3>
+          <p>Nuestro motor identifica cada alimento mencionado y lo cruza con nuestra base de datos nutricional.</p>
+        </div>
+        <div class="step-card reveal">
+          <div class="step-num">3</div>
+          <div class="step-icon">🥇</div>
+          <h3>Recibe tu calificación y alternativa</h3>
+          <p>Cada alimento se valora de A a E y recibe un sustituto más saludable, explicado con lenguaje claro.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANALIZADOR -->
+  <section class="section section-tinted" id="analizar">
+    <div class="container">
+      <h2 class="section-title reveal">Analiza tu alimentación</h2>
+      <p class="section-sub reveal">Elige texto o imagen. Cuanto más detalle des, mejor será el análisis.</p>
+
+      <div class="analyzer reveal">
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="texto" role="tab" aria-selected="true">✍️ Escribir texto</button>
+          <button class="tab" data-tab="imagen" role="tab" aria-selected="false">📷 Subir imagen</button>
+        </div>
+
+        <div class="tab-panel active" data-panel="texto">
+          <label for="inputTexto" class="panel-label">Describe qué has comido o qué tienes en la despensa</label>
+          <textarea id="inputTexto" rows="4" placeholder="Ej: Hoy he desayunado pan blanco con mantequilla y un zumo de naranja envasado, y de merienda unas galletas con chocolate con leche..."></textarea>
+          <button class="btn btn-primary" id="btnAnalizarTexto">
+            Analizar texto
+            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M13 5l7 7-7 7-1.41-1.41L16.17 13H4v-2h12.17l-4.58-4.59L13 5z"/></svg>
+          </button>
+        </div>
+
+        <div class="tab-panel" data-panel="imagen">
+          <label class="panel-label">Sube una foto de tu plato, tu despensa o una etiqueta</label>
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="inputImagen" accept="image/*" hidden>
+            <div id="dropzoneEmpty">
+              <span class="dropzone-icon">📷</span>
+              <p><strong>Arrastra una imagen aquí</strong> o haz clic para seleccionarla</p>
+              <span class="dropzone-hint">JPG o PNG. El análisis funciona automáticamente gracias a nuestra IA con visión — no necesitas configurar nada.</span>
+            </div>
+            <img id="previewImagen" hidden alt="Vista previa de la imagen subida">
+          </div>
+          <button class="btn btn-primary" id="btnAnalizarImagen" disabled>
+            Analizar imagen
+            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M13 5l7 7-7 7-1.41-1.41L16.17 13H4v-2h12.17l-4.58-4.59L13 5z"/></svg>
+          </button>
+        </div>
+
+        <p class="analyzer-status" id="analyzerStatus" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="results" id="results" hidden>
+        <div class="results-header reveal">
+          <h3>Resultado del análisis</h3>
+          <span class="results-count" id="resultsCount"></span>
+        </div>
+        <div class="results-grid" id="resultsGrid"></div>
+      </div>
+
+      <div class="empty-state" id="emptyState">
+        <span>🍽️</span>
+        <p>Tus alimentos detectados aparecerán aquí, con su calificación, su información nutricional y el mejor sustituto.</p>
+      </div>
+
+      <div class="ai-lookup reveal" id="aiLookup">
+        <div class="ai-lookup-head">
+          <span class="ai-lookup-icon">🔬</span>
+          <div>
+            <h3>¿No encuentras un alimento en la guía?</h3>
+            <p>Escribe su nombre: la IA buscará estudios científicos en PubMed y generará su ficha nutricional al momento.</p>
+          </div>
+        </div>
+        <div class="ai-lookup-form">
+          <input type="text" id="inputAiLookup" placeholder="Ej: kéfir, tofu, aceite de coco…">
+          <button class="btn btn-primary" id="btnAiLookup">
+            Buscar con IA
+            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M13 5l7 7-7 7-1.41-1.41L16.17 13H4v-2h12.17l-4.58-4.59L13 5z"/></svg>
+          </button>
+        </div>
+        <p class="analyzer-status" id="aiLookupStatus" role="status" aria-live="polite"></p>
+        <div id="aiLookupResult"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GUIA COMPLETA -->
+  <section class="section" id="alimentos">
+    <div class="container">
+      <h2 class="section-title reveal">Guía completa de alimentos</h2>
+      <p class="section-sub reveal">Explora toda nuestra base de datos nutricional y filtra por categoría o calificación.</p>
+
+      <div class="filters reveal">
+        <input type="search" id="buscadorGuia" placeholder="Buscar un alimento…">
+        <select id="filtroCategoria"></select>
+        <select id="filtroRating">
+          <option value="">Todas las calificaciones</option>
+          <option value="A">A — Excelente</option>
+          <option value="B">B — Buena</option>
+          <option value="C">C — Moderada</option>
+          <option value="D">D — Mejorable</option>
+          <option value="E">E — Poco recomendable</option>
+        </select>
+      </div>
+
+      <div class="guia-grid" id="guiaGrid"></div>
+    </div>
+  </section>
+
+  <!-- SOBRE -->
+  <section class="section section-tinted" id="sobre">
+    <div class="container about-grid">
+      <div class="reveal">
+        <h2 class="section-title" style="text-align:left">Un criterio nutricional claro, sin dogmas</h2>
+        <p>HSNutrición traduce principios básicos de la nutrición humana y dietética —perfil de grasas, densidad de fibra, azúcares añadidos y densidad calórica— en recomendaciones prácticas y fáciles de aplicar en la compra y en la cocina de cada día.</p>
+        <p>Cuando sugerimos un sustituto, priorizamos que la <strong>textura y el uso en la receta cambien lo mínimo posible</strong>. Por eso, ante grasas como la mantequilla, solemos señalar dos caminos: un cambio de mínimo esfuerzo (por ejemplo, margarina vegetal sin grasas trans) y la opción nutricionalmente superior —casi siempre el <strong>AOVE</strong>— cuando la receta lo permite.</p>
+        <p>Nuestra guía local cubre 41 alimentos habituales, pero la lista es abierta: si buscas uno que no está, la IA consulta <strong>PubMed</strong> —la base de datos de estudios biomédicos de EE. UU.— y redacta su ficha citando la evidencia científica real que encuentra.</p>
+        <div class="rating-legend">
+          <span class="badge badge-A">A</span> Excelente
+          <span class="badge badge-B">B</span> Buena
+          <span class="badge badge-C">C</span> Moderada
+          <span class="badge badge-D">D</span> Mejorable
+          <span class="badge badge-E">E</span> Poco recomendable
+        </div>
+      </div>
+      <div class="about-card reveal">
+        <h3>⚠️ Aviso importante</h3>
+        <p>La información de esta web es orientativa y educativa. Los valores nutricionales son referencias medias por 100&nbsp;g y pueden variar según marca y preparación. HSNutrición <strong>no sustituye la valoración individualizada</strong> de un dietista-nutricionista o médico, especialmente si tienes patologías, alergias o necesidades específicas.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="brand">
+      <span class="brand-mark">🥗</span>
+      <span class="brand-name">HS<span>Nutrición</span></span>
+    </div>
+    <p>Hecho con criterio nutricional y mucho verde 🌿 — Información educativa, no un consejo médico.</p>
+  </div>
+</footer>
+
+<!-- MODAL INFO IA -->
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
+    <h3 id="modalTitle">🔬 Cómo funciona la IA de HSNutrición</h3>
+    <p><strong>Análisis de imagen:</strong> tu foto se envía a una función segura de nuestro servidor, que la analiza con un modelo de visión y detecta los alimentos. La imagen no se almacena.</p>
+    <p><strong>Búsqueda con evidencia científica:</strong> cuando buscas un alimento que no está en nuestra guía, HSNutrición consulta PubMed (la base de datos de estudios biomédicos de EE. UU.) y pide a la IA que redacte la ficha nutricional citando esos estudios reales.</p>
+    <p class="modal-hint">Ninguna de estas funciones necesita que introduzcas una clave propia: usamos el nivel gratuito de Google Gemini, y la clave vive únicamente en el servidor del sitio, nunca en tu navegador.</p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="modalOk">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
