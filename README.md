@@ -12,8 +12,17 @@ local se generan al momento con IA, respaldados por estudios reales de PubMed.
 - `api/food-lookup.js` — función serverless: busca en PubMed y genera con IA
   la ficha de un alimento que no está en `js/data.js`.
 
-Las dos funciones usan `ANTHROPIC_API_KEY` **solo en el servidor**; el navegador
-nunca ve la clave.
+Las dos funciones usan `GEMINI_API_KEY` (API gratuita de Google Gemini)
+**solo en el servidor**; el navegador nunca ve la clave.
+
+## Conseguir la clave gratuita de Gemini
+
+1. Entra en [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+   con tu cuenta de Google.
+2. Pulsa **Create API key** y cópiala (empieza distinto según el proyecto,
+   no tiene un prefijo fijo).
+3. El nivel gratuito tiene límites de peticiones por minuto/día, pero no
+   requiere tarjeta de crédito ni caduca.
 
 ## Desplegar en Vercel
 
@@ -22,7 +31,8 @@ nunca ve la clave.
 2. En [vercel.com](https://vercel.com), importa el repositorio (framework
    preset: "Other" — no necesita build command ni output directory, es estático).
 3. En **Project Settings → Environment Variables**, añade:
-   - `ANTHROPIC_API_KEY` (obligatoria) — tu clave de la API de Anthropic.
+   - `GEMINI_API_KEY` (obligatoria) — tu clave gratuita de Google AI Studio.
+   - `GEMINI_MODEL` (opcional) — por defecto `gemini-2.5-flash`.
    - `NCBI_API_KEY` y `NCBI_EMAIL` (opcionales) — para tener más cuota al
      consultar PubMed.
 4. Despliega. La web y las funciones `/api/*` quedan servidas juntas.
@@ -33,7 +43,7 @@ nunca ve la clave.
 npm i -g vercel
 vercel login
 vercel            # despliegue de prueba
-vercel env add ANTHROPIC_API_KEY
+vercel env add GEMINI_API_KEY
 vercel --prod     # despliegue a producción
 ```
 
